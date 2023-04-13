@@ -14,6 +14,9 @@ RUN ?= docker run -it --rm  \
 cog:	
 	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
 
+raster-tiles:	
+	$(RUN) bash utils/raster-tiles.sh qgis/full-nz-mono
+
 tiler-edit: Dockerfile
 	docker run -it --rm  \
 	-e POSTGRES_HOST_AUTH_METHOD=trust \
