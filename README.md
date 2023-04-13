@@ -1,3 +1,3 @@
-# qgis-cog-tiles
+# qgis-tiles
 
 # In Development
