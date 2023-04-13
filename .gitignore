@@ -1,0 +1,29 @@
+
+
+# testing data
+data/*
+qgis/*
+data-outputs/*
+cog-outputs/*
+web-docs/cog/*
+tiles*
+*.lock
+*.h5
+
+# VSCode
+.vscode/*
+
+# Mac
+**/.DS_Store
+.dbus*
+
+# History and AWS
+.aws
+.bash_history
+.cache
+.local
+.python_history
+
+# hide secrets
+.creds
+.config
