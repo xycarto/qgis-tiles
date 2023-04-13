@@ -13,17 +13,11 @@ from multiprocessing import Pool
 
 # make tiler
 # python3 utils/image-export.py "qgis/full-nz-mono.qgz" 32000000 4
-# OR
-# make QGISPROJECT=qgis/full-nz-mono.qgz SCALES=32000000,16000000,8000000 image-exports
 
 
-
-def rend(index, gtile):
-    
-    # print(f"Rendering Grid Tile: {gtile}")
-    
+def rend(index, gtile):        
     # Set Paths
-    raw_path = os.path.join(out_base, str(index), "raw")
+    raw_path = os.path.join(OUT_BASE, str(index))
     os.makedirs(raw_path, exist_ok=True)
     
     # Get bounds for processing
@@ -34,14 +28,14 @@ def rend(index, gtile):
     
     width = math.ceil(
     abs(
-        (((xmin - xmax) * meter_to_inch) / float(scale))
-        * dpi
+        (((xmin - xmax) * METRE_TO_INCH) / float(scale))
+        * DPI
     )
     )
     height = math.ceil(
         abs(
-            (((ymin - ymax) * meter_to_inch) / float(scale))
-            * dpi
+            (((ymin - ymax) * METRE_TO_INCH) / float(scale))
+            * DPI
         )
     )
     
@@ -99,54 +93,56 @@ def rend(index, gtile):
     
     os.remove(image_path)
 
-project_path = sys.argv[1]
-scale = sys.argv[2]
+def main(gpGrid):
+    print("Rendering QGIS")
+    with Pool(4) as pool:
+        # prepare arguments
+        items = [(index, gtile) for index, gtile in gpGrid.iterrows()]
+        # issue tasks to the process pool and wait for tasks to complete
+        pool.starmap(rend, items)
 
-PROCESSORS = sys.argv[3]
+if __name__ == "__main__":
+    project_path = sys.argv[1]
+    scale = sys.argv[2]
 
-grid = "qgis/qgis-data/grids/100k_grid.gpkg"
-out_dir = "tiles"
+    PROCESSORS = sys.argv[3]
 
-dir_name = os.path.basename(project_path).split(".")[0]
-out_base = os.path.join(out_dir, "cog-outputs", dir_name)
-os.makedirs(out_base, exist_ok=True)
+    GRID = "qgis/qgis-data/grids/100k_grid.gpkg"
+    OUT_DIR = "tiles"
+
+    DIR_NAME = os.path.basename(project_path).split(".")[0]
+    OUT_BASE = os.path.join(OUT_DIR, "qgis-grids", DIR_NAME)
+    os.makedirs(OUT_BASE, exist_ok=True)
+
+    # Resolutions and scales set per LINZ map tiles standards:
+    # https://www.linz.govt.nz/data/linz-data-service/guides-and-documentation/nztm2000-map-tile-service-schema
+    METRE_TO_INCH = 39.3701
+    DPI = 90.71428571428571
+    # Supply path to qgis install location
+    # Create a reference to the QgsApplication.  Setting the
+    # second argument to False disables the GUI.
+    print("Setting QGIS paths")
+    qgs = QgsApplication([], False)
+    QgsApplication.setPrefixPath("/usr", True)
+    QgsApplication.setThemeName("default")
+    app = QgsApplication([], False, ".local/share/QGIS/QGIS3/profiles/default")
+    app.initQgis()
+    authMgr = app.authManager()
+
+    project = QgsProject.instance()
+
+    project.read(project_path)
+
+    layers = QgsProject.instance().mapLayers().values()
+
+    # Project Extent
+    proj_extent = project.mapLayersByName("nz-extent")[0].extent()
+
+    # Scales
+    gpGrid = gp.read_file(GRID) 
+    main(gpGrid)
 
 
-# Resolutions and scales set per LINZ map tiles standards:
-# https://www.linz.govt.nz/data/linz-data-service/guides-and-documentation/nztm2000-map-tile-service-schema
-meter_to_inch = 39.3701
-dpi = 90.71428571428571
-
-
-# Supply path to qgis install location
-# Create a reference to the QgsApplication.  Setting the
-# second argument to False disables the GUI.
-print("Setting QGIS paths")
-qgs = QgsApplication([], False)
-QgsApplication.setPrefixPath("/usr", True)
-QgsApplication.setThemeName("default")
-app = QgsApplication([], False, ".local/share/QGIS/QGIS3/profiles/default")
-app.initQgis()
-authMgr = app.authManager()
-
-project = QgsProject.instance()
-
-project.read(project_path)
-
-layers = QgsProject.instance().mapLayers().values()
-
-# Project Extent
-proj_extent = project.mapLayersByName("nz-extent")[0].extent()
-
-# Scales
-gpGrid = gp.read_file(grid)   
-
-print("Rendering QGIS")
-with Pool(4) as pool:
-    # prepare arguments
-    items = [(index, gtile) for index, gtile in gpGrid.iterrows()]
-    # issue tasks to the process pool and wait for tasks to complete
-    pool.starmap(rend, items)
 
         
     
