@@ -16,8 +16,8 @@ PROCESSORS = sys.argv[1]
 project = sys.argv[2].split("/")[-1]
 print(project)
 
-in_tif_dir = f"raster-tiles/data-hold/cog-outputs"
-outputdir = f"raster-tiles/{project}"
+in_tif_dir = f"tiles/qgis-grids"
+outputdir = f"tiles/raster-tiles/{project}"
 os.makedirs(outputdir, exist_ok=True)
 
 scales_json = open('configs/scales.json')

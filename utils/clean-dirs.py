@@ -7,7 +7,7 @@ import sys
 project = sys.argv[1].split("/")[-1]
 print(project)
 
-dirs = f"raster-tiles/{project}"
+dirs = f"tiles/raster-tiles/{project}"
 
 # list_dirs = os.listdir(dirs)
 
