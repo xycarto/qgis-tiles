@@ -95,12 +95,18 @@ if __name__ == "__main__":
     DIR_NAME = os.path.basename(PROJECT_PATH).split(".")[0]
     QGIS_TILES = os.path.join(OUT_DIR, "qgis-grids", DIR_NAME)
     COG_OUTPUTS = os.path.join(OUT_DIR, "cog-outputs", DIR_NAME)
-    VRT_DIR = os.path.join(OUT_DIR, "cog-outputs")
+    VRT_DIR = os.path.join(OUT_DIR, "qgis-grids")
 
-    if os.path.isdir(VRT_DIR):
-        shutil.rmtree(VRT_DIR)
-        os.makedirs(VRT_DIR, exist_ok=True)
+    if os.path.isdir(COG_OUTPUTS):
+        shutil.rmtree(COG_OUTPUTS)
         os.makedirs(COG_OUTPUTS, exist_ok=True)
+     
+    # Remove all old vrt   
+    test = os.listdir(VRT_DIR)
+
+    for item in test:
+        if item.endswith(".vrt"):
+            os.remove(os.path.join(VRT_DIR, item))
         
     # set scale
     int_scales = [int(x) for x in SCALES]
