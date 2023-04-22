@@ -1,7 +1,7 @@
 -include .creds
 
-BASEIMAGE := qgis-cog-tiler
-IMAGE := $(BASEIMAGE):2023-04-13
+BASEIMAGE := xycarto/qgis-tiler
+IMAGE := $(BASEIMAGE):2023-04-22
 
 RUN ?= docker run -it --rm  \
 	-e POSTGRES_HOST_AUTH_METHOD=trust \
@@ -30,3 +30,11 @@ tiler-local: Dockerfile
 	docker build --tag $(BASEIMAGE) - < $<  && \
 	docker tag $(BASEIMAGE) $(IMAGE)
 
+tiler-push: Dockerfile
+	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
+	docker build --tag $(BASEIMAGE) - < $<  && \
+	docker tag $(BASEIMAGE) $(IMAGE) && \
+	docker push $(IMAGE)
+
+tiler-pull:
+	docker pull $(IMAGE)
