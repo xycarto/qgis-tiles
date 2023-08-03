@@ -7,7 +7,7 @@ RUN ?= docker run -it --rm  \
 	-e POSTGRES_HOST_AUTH_METHOD=trust \
 	-e DISPLAY=$$DISPLAY \
 	--env-file .creds \
-	-e RUN= -v$$(pwd):/work \
+	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE)
 
 # Make tiler docker
@@ -16,6 +16,9 @@ cog:
 
 raster-tiles:	
 	$(RUN) bash utils/raster-tiles.sh qgis/full-nz-mono
+
+raster-tiles-test:	
+	$(RUN) python3 utils/raster-tiler-test-grid.py "qgis/full-nz-mono.qgz"
 
 tiler-edit: Dockerfile
 	docker run -it --rm  \
