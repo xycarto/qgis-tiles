@@ -125,7 +125,95 @@ matrix = [
       "matrixWidth": 8,
       "matrixHeight": 16,
       "reso": 2240
-    }      
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "3",
+      "scaleDenominator": 4000000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 16,
+      "matrixHeight": 32,
+      "reso": 1120
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "4",
+      "scaleDenominator": 2000000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 32,
+      "matrixHeight": 64,
+      "reso": 560
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "5",
+      "scaleDenominator": 1000000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 64,
+      "matrixHeight": 128,
+      "reso": 280
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "6",
+      "scaleDenominator": 500000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 128,
+      "matrixHeight": 256,
+      "reso": 140
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "7",
+      "scaleDenominator": 250000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 256,
+      "matrixHeight": 512,
+      "reso": 70
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "8",
+      "scaleDenominator": 100000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 640,
+      "matrixHeight": 1280,
+      "reso": 28
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "9",
+      "scaleDenominator": 50000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 1280,
+      "matrixHeight": 2560,
+      "reso": 14
+    },
+    {
+      "type": "TileMatrixType",
+      "identifier": "10",
+      "scaleDenominator": 25000,
+      "topLeftCorner": [10000000, -1000000],
+      "tileWidth": 256,
+      "tileHeight": 256,
+      "matrixWidth": 2560,
+      "matrixHeight": 5120,
+      "reso": 7
+    }              
     ]
 
 METRE_TO_INCH = 39.3701
@@ -181,7 +269,7 @@ for scl in matrix:
 
     
     print("Rendering QGIS")
-    with Pool(4) as pool:
+    with Pool(8) as pool:
         # prepare arguments
         items = [(index, row, scl) for index, row in grid.iterrows()]
         # issue tasks to the process pool and wait for tasks to complete
