@@ -88,10 +88,12 @@ def render(matrix_zoom, row, out_dir, project):
         )
     )
     
-    save_dir = os.path.join(out_dir, str(row.column))
-    os.makedirs(save_dir, exist_ok=True)
+    zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
+    col_dir = os.path.join(zoom_dir, str(row.column))
+    os.makedirs(zoom_dir, exist_ok=True)
+    os.makedirs(col_dir, exist_ok=True)
     
-    image_path = os.path.join(save_dir, f"{str(row.row)}.png")
+    image_path = os.path.join(col_dir, f"{str(row.row)}.png")
     
     # Start Map Settings
     settings = QgsMapSettings()
