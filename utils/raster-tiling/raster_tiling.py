@@ -32,11 +32,6 @@ def index_matrix(matrix, gpkg, crs):
                 {
                 'row': j,
                 'column': i,
-                'grid_num': str(gridNum),
-                'xmin': XleftOrigin,
-                'xmax': XrightOrigin,
-                'ymin': Ybottom,
-                'ymax': Ytop,
                 'geometry': writeGeom
                 }
             ) 

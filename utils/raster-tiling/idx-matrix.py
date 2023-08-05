@@ -14,6 +14,7 @@ def main():
     matrix_zoom = [x for x in json_reso if x["identifier"] == ZOOM]
     
     gpkg = os.path.join(GPKG_DIR, f"{str(matrix_zoom[0]['scaleDenominator'])}.gpkg")
+    csv = os.path.join(GPKG_DIR, f"{str(matrix_zoom[0]['scaleDenominator'])}.csv")
     crs = 2193
     if not os.path.exists(gpkg):
         idxm(matrix_zoom[0], gpkg, crs)    

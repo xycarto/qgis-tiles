@@ -15,16 +15,25 @@ PHONEY: index raster-tiles
 cog:	
 	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
 
+# make coverage matrix=NZTM2000 qgis="qgis/full-nz-mono.qgz" maxzoom=6
+coverage:
+	$(RUN) bash utils/raster-tiling/coverage.sh $(matrix) $(qgis) $(maxzoom)
+
 # make index matrix=NZTM2000 zoom=1
 index:
 	$(RUN) python3 utils/raster-tiling/idx-matrix.py $(matrix) $(zoom)
 
-# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz
-raster-tiles:	
-	$(RUN) python3 utils/raster-tiling/render-zoom.py $(matrix) $(zoom) $(qgis)
+# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz path="data/coverage/full-nz.gpkg"
+no-index:
+	$(RUN) python3 utils/raster-tiling/test-start-point.py  $(matrix) $(zoom) $(qgis) $(path)
 
+# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz path="data/coverage/full-nz.gpkg"
+raster-tiles:	
+	$(RUN) python3 utils/raster-tiling/render-zoom.py $(matrix) $(zoom) $(qgis) $(path)
+
+# make raster-tiles-test matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz path="data/coverage/full-nz.gpkg"
 raster-tiles-test:	
-	$(RUN) python3 utils/raster-tiling/raster-tiler-test-grid.py "qgis/full-nz-mono.qgz"
+	$(RUN) python3 utils/raster-tiling/render-zoom-no-index.py $(matrix) $(zoom) $(qgis) $(path)
 
 test-local: Dockerfile
 	docker run -it --rm  \

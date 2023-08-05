@@ -6,8 +6,10 @@ import os
 import sys
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gp
-from multiprocessing import Pool
+from multiprocessing import Pool, Process
 import math
+
+from shapely.geometry import Polygon
 
 from qgis.core import *
 from qgis.gui import *
@@ -21,13 +23,13 @@ from qgis.PyQt.QtGui import *
 #     for index, row in idx
     
 
-def parse_idx(idx):
-    print("Find intersecting tiles...")
-    coverage = gp.read_file(COVERAGE)
-    coverage_dissolve = coverage.dissolve()
-    idx_inter = idx.loc[idx.intersects(coverage_dissolve.geometry[0])]
+# def parse_idx(idx):
+#     print("Find intersecting tiles...")
+#     coverage = gp.read_file(COVERAGE)
+#     coverage_dissolve = coverage.dissolve()
+#     idx_inter = idx.loc[idx.intersects(coverage_dissolve.geometry[0])]
     
-    return idx_inter
+#     return idx_inter
     
 def get_index(matrix_zoom):
     gpkg = os.path.join(GPKG_DIR, f"{str(matrix_zoom[0]['scaleDenominator'])}.gpkg")
@@ -45,12 +47,11 @@ def get_project_name():
     
     return out_dir
 
-def render(matrix_zoom, row, out_dir):
+def render(matrix_zoom, row, column, geom, out_dir):
     METRE_TO_INCH = 39.3701
     DPI = 90.71428571428571
     
-    print(type(row))
-    xmin, ymin, xmax, ymax = row.geometry.bounds
+    xmin, ymin, xmax, ymax = geom.bounds
     
     width = math.floor(
         abs(
@@ -66,11 +67,11 @@ def render(matrix_zoom, row, out_dir):
     )
     
     zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
-    col_dir = os.path.join(zoom_dir, str(row.column))
+    col_dir = os.path.join(zoom_dir, str(column))
     os.makedirs(zoom_dir, exist_ok=True)
     os.makedirs(col_dir, exist_ok=True)
     
-    image_path = os.path.join(col_dir, f"{str(row.row)}.png")
+    image_path = os.path.join(col_dir, f"{str(row)}.png")
     
     # Start Map Settings
     settings = QgsMapSettings()
@@ -88,7 +89,7 @@ def render(matrix_zoom, row, out_dir):
     settings.setLayers(layers)
 
     # Set Extent
-    settings.setExtent(QgsRectangle(row.xmin, row.ymin, row.xmax, row.ymax))
+    settings.setExtent(QgsRectangle(xmin, ymin, xmax, ymax))
     
     # setup qgis map renderer
     # print("Rendering...")
@@ -101,19 +102,54 @@ def render(matrix_zoom, row, out_dir):
     # print("Saving Image...")
     img.save(image_path, "png")    
 
+def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom):
+    for row in range(matrix_zoom[0]['matrixHeight']):
+        writeGeom = Polygon([(XleftOrigin, Ytop), (XrightOrigin, Ytop), (XrightOrigin, Ybottom), (XleftOrigin, Ybottom)]) 
+        idx_inter = coverage_dissolve.loc[coverage_dissolve.intersects(writeGeom)]
+        if not idx_inter.empty:
+            # print(f"Making tile {row}, {column}")
+            render(matrix_zoom, row, column, writeGeom, out_dir)         
+        
+        Ytop = Ytop - tile_span_y
+        Ybottom = Ybottom - tile_span_y    
+
 def main():
+    print(f"Making tiles for Zoom {ZOOM}...")
     matrix, resos = get_configs(CONFIGS_DIR, MATRIX_NAME)
     json_reso = parse_configs(matrix, resos)  
     matrix_zoom = [x for x in json_reso if x["identifier"] == ZOOM]
     out_dir = get_project_name()
-    idx = get_index(matrix_zoom)  
-    idx_inter = parse_idx(idx)
-    print(f"Making tiles for Zoom {ZOOM}...")
-    with Pool(8) as pool:
-        # prepare arguments
-        items = [(matrix_zoom, row, out_dir) for index, row in idx_inter.iterrows()]
-        # issue tasks to the process pool and wait for tasks to complete
-        pool.starmap(render, items) 
+    
+    coverage = gp.read_file(COVERAGE)          
+    coverage_dissolve = coverage.dissolve()
+    
+    cell_size = matrix_zoom[0]['resolution']
+    tile_span_x = matrix_zoom[0]['tileWidth'] * cell_size
+    tile_span_y = matrix_zoom[0]['tileHeight'] * cell_size
+
+    XleftOrigin = matrix_zoom[0]['topLeftCorner'][1]
+    XrightOrigin = XleftOrigin + tile_span_x
+    YtopOrigin = matrix_zoom[0]['topLeftCorner'][0]
+    YbottomOrigin = YtopOrigin - tile_span_y
+    
+    pool = Pool(8)
+    for column in range(matrix_zoom[0]['matrixWidth']):
+        Ytop = YtopOrigin
+        Ybottom = YbottomOrigin
+        pool.apply_async(rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom))
+        # for row in range(matrix_zoom[0]['matrixHeight']):
+        #     writeGeom = Polygon([(XleftOrigin, Ytop), (XrightOrigin, Ytop), (XrightOrigin, Ybottom), (XleftOrigin, Ybottom)]) 
+        #     idx_inter = coverage_dissolve.loc[coverage_dissolve.intersects(writeGeom)]
+        #     if not idx_inter.empty:
+        #         render(matrix_zoom, row, column, writeGeom, out_dir)
+        #         # pool.apply_async(render, args=(matrix_zoom, row, column, writeGeom, out_dir))               
+            
+            # Ytop = Ytop - tile_span_y
+            # Ybottom = Ybottom - tile_span_y
+        XleftOrigin = XleftOrigin + tile_span_x
+        XrightOrigin = XrightOrigin + tile_span_x
+    pool.close()
+    pool.join()        
     
 if __name__ == "__main__": 
     # Inputs   

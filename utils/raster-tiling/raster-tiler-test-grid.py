@@ -269,7 +269,7 @@ for scl in matrix:
 
     
     print("Rendering QGIS")
-    with Pool(8) as pool:
+    with Pool(12) as pool:
         # prepare arguments
         items = [(index, row, scl) for index, row in grid.iterrows()]
         # issue tasks to the process pool and wait for tasks to complete
