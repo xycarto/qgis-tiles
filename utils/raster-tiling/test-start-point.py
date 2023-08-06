@@ -78,9 +78,7 @@ def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_
         Ybottom = Ybottom - tile_span_y
         
 def render(matrix_zoom, row, column, geom, out_dir, crs):
-    METRE_TO_INCH = 39.3701
-    DPI = 90.71428571428571
-    
+        
     xmin, ymin, xmax, ymax = geom.bounds
     
     width = math.floor(
@@ -229,8 +227,10 @@ if __name__ == "__main__":
     
     # Constants
     MPP = 0.00028 # Meters per Pixel
-    CORES = 8
-        
+    CORES = 8    
+    METRE_TO_INCH = 39.3701
+    DPI = 90.71428571428571
+    
     for d in [DATA_DIR, CONFIGS_DIR, TILES_DIR]:
         os.makedirs(d, exist_ok=True)
         
