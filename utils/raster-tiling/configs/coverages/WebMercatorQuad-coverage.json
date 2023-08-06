@@ -1,0 +1,23 @@
+{
+    "WebMercatorQuad": [
+        {
+            "identifier": "full-world",
+            "minzoom": 0,
+            "maxzoom": 7,
+            "path": "data/coverage/NZTM2000/full-nz.gpkg"
+        },
+        {
+            "identifier": "mid-world",
+            "minzoom": 8,
+            "maxzoom": 9,
+            "path": "data/coverage/NZTM2000/mid-nz.gpkg"
+        },
+        {
+            "identifier": "small-world",
+            "minzoom": 10,
+            "maxzoom": 11,
+            "path": "data/coverage/NZTM2000/small-nz.gpkg"
+        }
+        
+    ]
+}

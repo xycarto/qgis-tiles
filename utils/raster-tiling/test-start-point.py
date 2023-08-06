@@ -1,16 +1,15 @@
 from raster_tiling import index_matrix as idxm
-from raster_tiling import get_configs
+# from raster_tiling import get_configs
 from raster_tiling import parse_configs
 # from raster_tiling import render
+import json
 import os
 import sys
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gp
-from multiprocessing import Pool, Process
+from multiprocessing import Pool
 import math
-
 from shapely.geometry import Polygon
-
 from qgis.core import *
 from qgis.gui import *
 from qgis.PyQt.QtCore import *
@@ -25,11 +24,21 @@ def get_project_name():
     
     return out_dir  
 
-def get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx):
-    x_left = matrix_zoom[0]['topLeftCorner'][1]
-    x_right = x_left + tile_span_x
-    y_top = matrix_zoom[0]['topLeftCorner'][0]
-    y_bottom = y_top - tile_span_y
+def get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs):
+    if MATRIX_NAME == "NZTM2000":
+        x_left = matrix_zoom[0]['topLeftCorner'][1]
+        x_right = x_left + tile_span_x
+        y_top = matrix_zoom[0]['topLeftCorner'][0]
+        y_bottom = y_top - tile_span_y
+    
+    elif MATRIX_NAME == "WebMercatorQuad":
+        x_left = matrix_zoom[0]['pointOfOrigin'][1]
+        x_right = x_left + tile_span_x
+        y_top = matrix_zoom[0]['pointOfOrigin'][0]
+        y_bottom = y_top - tile_span_y
+    else:
+        print("Invalid Projection. Must be either NZTM2000 or WebMercatorQuad")
+        exit  
     
     # from orgin, count down by span
     y_count = int(abs((y_top - abs(cmaxy)) / tile_span_y))
@@ -52,23 +61,23 @@ def get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx):
         "geometry": poly
     }]
     
-    origin_cell = gp.GeoDataFrame(df, crs=2193)
+    origin_cell = gp.GeoDataFrame(df, crs=crs)
     origin_cell.to_file("data/test_origin.gpkg", driver="GPKG")
     
     return origin_cell, x_count, y_count
 
-def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height):
+def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs):
     for row in range(y_count, matrix_height+y_count+1, 1):
         writeGeom = Polygon([(XleftOrigin, Ytop), (XrightOrigin, Ytop), (XrightOrigin, Ybottom), (XleftOrigin, Ybottom)]) 
         idx_inter = coverage_dissolve.loc[coverage_dissolve.intersects(writeGeom)]
         if not idx_inter.empty:
             # print(f"Making tile {row}, {column}")
-            render(matrix_zoom, row, column, writeGeom, out_dir)         
+            render(matrix_zoom, row, column, writeGeom, out_dir, crs)         
         
         Ytop = Ytop - tile_span_y
         Ybottom = Ybottom - tile_span_y
         
-def render(matrix_zoom, row, column, geom, out_dir):
+def render(matrix_zoom, row, column, geom, out_dir, crs):
     METRE_TO_INCH = 39.3701
     DPI = 90.71428571428571
     
@@ -98,7 +107,7 @@ def render(matrix_zoom, row, column, geom, out_dir):
     settings = QgsMapSettings()
     settings.setOutputSize(QSize(width, height))
 
-    settings.setDestinationCrs(QgsCoordinateReferenceSystem.fromEpsgId(2193))
+    settings.setDestinationCrs(QgsCoordinateReferenceSystem.fromEpsgId(crs))
     
     p = QPainter()
     img = QImage(QSize(width, height), QImage.Format_ARGB32_Premultiplied)
@@ -122,24 +131,69 @@ def render(matrix_zoom, row, column, geom, out_dir):
     # save the image
     # print("Saving Image...")
     img.save(image_path, "png")    
-  
+
+def get_coverage_extent():    
+    coverage = gp.read_file(COVERAGE)          
+    coverage_dissolve = coverage.dissolve()
+    cminx, cminy, cmaxx, cmaxy = coverage_dissolve.total_bounds
+    
+    return cminx, cminy, cmaxx, cmaxy, coverage_dissolve
+
+def parse_matrix(matrix):
+    if MATRIX_NAME == "NZTM2000":
+        tile_matrix = "tileMatrix"
+        id = "identifier"
+    elif MATRIX_NAME == "WebMercatorQuad":
+        tile_matrix = "tileMatrices"
+        id = "id"
+    else:
+        print("Invalid Projection. Must be either NZTM2000 or WebMercatorQuad")
+        exit   
+    
+    matrix_zoom = [x for x in matrix[tile_matrix] if x[id] == ZOOM]
+    
+    return matrix_zoom
+
+def get_matrix_specs(matrix_zoom):
+    if MATRIX_NAME == "NZTM2000":
+        cell_size = matrix_zoom[0]['scaleDenominator'] * MPP
+        tile_span_x = matrix_zoom[0]['tileWidth'] * cell_size
+        tile_span_y = matrix_zoom[0]['tileHeight'] * cell_size
+    elif MATRIX_NAME == "WebMercatorQuad":
+        cell_size = matrix_zoom[0]['cellSize']
+        tile_span_x = matrix_zoom[0]['tileWidth'] * cell_size
+        tile_span_y = matrix_zoom[0]['tileHeight'] * cell_size
+    else:
+        print("Invalid Projection. Must be either NZTM2000 or WebMercatorQuad")
+        exit  
+    
+    return tile_span_x, tile_span_y
+
+def get_crs():
+    if MATRIX_NAME == "NZTM2000":
+        crs=2193
+    elif MATRIX_NAME == "WebMercatorQuad":
+        crs=3857
+    else:
+        print("Invalid Projection. Must be either NZTM2000 or WebMercatorQuad")
+        exit  
+        
+    return crs
 
 def main():
     print(f"Making tiles for Zoom {ZOOM}...")
-    matrix, resos = get_configs(CONFIGS_DIR, MATRIX_NAME)
-    json_reso = parse_configs(matrix, resos)  
-    matrix_zoom = [x for x in json_reso if x["identifier"] == ZOOM]
+    
+    crs = get_crs()
+    
+    with open(os.path.join(CONFIGS_DIR, f"{MATRIX_NAME}.json")) as jfile:
+        matrix = json.load(jfile)
+    
+    matrix_zoom = parse_matrix(matrix)
     out_dir = get_project_name()
-    
-    coverage = gp.read_file(COVERAGE)          
-    coverage_dissolve = coverage.dissolve()
-    cminx, cminy, cmaxx, cmaxy= coverage_dissolve.total_bounds
-    
-    cell_size = matrix_zoom[0]['resolution']
-    tile_span_x = matrix_zoom[0]['tileWidth'] * cell_size
-    tile_span_y = matrix_zoom[0]['tileHeight'] * cell_size
+    cminx, cminy, cmaxx, cmaxy, coverage_dissolve = get_coverage_extent()    
+    tile_span_x, tile_span_y = get_matrix_specs(matrix_zoom)
 
-    origin_cell, x_count, y_count = get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx)
+    origin_cell, x_count, y_count = get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs)
     minx, miny, maxx, maxy = origin_cell.total_bounds    
     
     XleftOrigin = minx
@@ -150,11 +204,11 @@ def main():
     matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
     matrix_height = math.ceil((abs(cmaxy) - abs(cminy)) / tile_span_y)
     
-    pool = Pool(8)
+    pool = Pool(CORES)
     for column in range(x_count, matrix_width+x_count+1, 1):
         Ytop = YtopOrigin
         Ybottom = YbottomOrigin
-        pool.apply_async(rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height))
+        pool.apply_async(rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs))
         XleftOrigin = XleftOrigin + tile_span_x
         XrightOrigin = XrightOrigin + tile_span_x
     pool.close()
@@ -171,10 +225,13 @@ if __name__ == "__main__":
     # DIRS 
     DATA_DIR = "data"    
     TILES_DIR = "tiles"
-    CONFIGS_DIR = os.path.join("utils", "raster-tiling", "configs")
-    GPKG_DIR = os.path.join(DATA_DIR, "idx", MATRIX_NAME)
+    CONFIGS_DIR = os.path.join("utils", "raster-tiling", "configs", "matrix")
+    
+    # Constants
+    MPP = 0.00028 # Meters per Pixel
+    CORES = 8
         
-    for d in [DATA_DIR, CONFIGS_DIR, GPKG_DIR, TILES_DIR]:
+    for d in [DATA_DIR, CONFIGS_DIR, TILES_DIR]:
         os.makedirs(d, exist_ok=True)
         
     print("Setting QGIS paths")

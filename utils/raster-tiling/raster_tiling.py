@@ -12,6 +12,12 @@ import glob
 import json
 
 
+def get_reso(scale):    
+    MPP = 0.00028 # Meters per Pixel
+    resolution =  scale * MPP
+    
+    return resolution
+
 def index_matrix(matrix, gpkg, crs):
     cell_size = matrix['resolution']
     tile_span_x = matrix['tileWidth'] * cell_size
