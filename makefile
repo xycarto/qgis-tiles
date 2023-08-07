@@ -15,17 +15,17 @@ PHONEY: index raster-tiles coverage
 cog:	
 	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
 
-# make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" maxzoom=6
+# time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=10 maxzoom=11 version=v1
 coverage:
-	$(RUN) bash utils/raster-tiling/coverage.sh $(epsg) $(qgis) $(maxzoom)
+	$(RUN) bash utils/raster-tiling/coverage.sh $(epsg) $(qgis) $(minzoom) $(maxzoom) $(version)
 
 # make index matrix=NZTM2000 zoom=1
 index:
 	$(RUN) python3 utils/raster-tiling/idx-matrix.py $(matrix) $(zoom)
 
-# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg"
+# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
 no-index:
-	$(RUN) python3 utils/raster-tiling/test-start-point.py  $(matrix) $(zoom) $(qgis) $(coverage)
+	$(RUN) python3 utils/raster-tiling/test-start-point.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version)
 
 # make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg"
 raster-tiles:	

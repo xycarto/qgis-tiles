@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# bash utils/raster-tiling/coverage.sh 2193 "qgis/full-nz-mono.qgz" 6 
+# bash utils/raster-tiling/coverage.sh 2193 0 qgis/full-nz-mono.qgz "data/coverage/full-nz.gpkg" "v1"
+# time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=10 maxzoom=11 version=v1 
 
 EPSG=$1
 PROJECT=$2
-MAXZOOM=$3
+MINZOOM=$3
+MAXZOOM=$4
+VERSION=$5
 
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then
@@ -27,9 +30,11 @@ do
 
     for zoom in $( seq $minzoom $maxzoom)
     do
-        make no-index matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path}
-        if [[ $zoom -eq $MAXZOOM ]]; then
-            exit
+        if [[ $zoom -ge $MINZOOM ]]; then
+            make no-index matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION
+            if [[ $zoom -eq $MAXZOOM ]]; then
+                exit
+            fi
         fi
     done   
 done

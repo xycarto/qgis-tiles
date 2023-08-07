@@ -19,7 +19,7 @@ from qgis.PyQt.QtGui import *
 
 def get_project_name():
     base = os.path.basename(QGIS_PATH).split(".")[0]
-    out_dir = os.path.join(TILES_DIR, base)
+    out_dir = os.path.join(TILES_DIR, base, VERSION, base)
     os.makedirs(out_dir, exist_ok=True)
     
     return out_dir  
@@ -77,8 +77,7 @@ def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_
         Ytop = Ytop - tile_span_y
         Ybottom = Ybottom - tile_span_y
         
-def render(matrix_zoom, row, column, geom, out_dir, crs):
-        
+def render(matrix_zoom, row, column, geom, out_dir, crs):        
     xmin, ymin, xmax, ymax = geom.bounds
     
     width = math.floor(
@@ -219,6 +218,7 @@ if __name__ == "__main__":
     ZOOM = sys.argv[2]
     QGIS_PATH = sys.argv[3]
     COVERAGE=sys.argv[4]
+    VERSION = sys.argv[5]
     
     # DIRS 
     DATA_DIR = "data"    
