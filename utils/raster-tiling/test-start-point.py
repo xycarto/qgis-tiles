@@ -129,9 +129,9 @@ def render(matrix_zoom, row, column, geom, out_dir, crs):
     # print("Saving Image...")
     img.save(image_path, "png")    
 
-def get_coverage_extent():    
-    coverage = gp.read_file(COVERAGE)          
-    coverage_dissolve = coverage.dissolve()
+def get_coverage_extent(row, crs):  
+    coverage_feature = gp.GeoDataFrame([row], crs = crs)     
+    coverage_dissolve = coverage_feature.dissolve()
     cminx, cminy, cmaxx, cmaxy = coverage_dissolve.total_bounds
     
     return cminx, cminy, cmaxx, cmaxy, coverage_dissolve
@@ -186,30 +186,32 @@ def main():
         matrix = json.load(jfile)
     
     matrix_zoom = parse_matrix(matrix)
-    out_dir = get_project_name()
-    cminx, cminy, cmaxx, cmaxy, coverage_dissolve = get_coverage_extent()    
-    tile_span_x, tile_span_y = get_matrix_specs(matrix_zoom)
+    out_dir = get_project_name()        
+    coverage = gp.read_file(COVERAGE)  
+    for index, crow in coverage.iterrows(): 
+        cminx, cminy, cmaxx, cmaxy, coverage_dissolve = get_coverage_extent(crow, crs)    
+        tile_span_x, tile_span_y = get_matrix_specs(matrix_zoom)
 
-    origin_cell, x_count, y_count = get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs)
-    minx, miny, maxx, maxy = origin_cell.total_bounds    
-    
-    XleftOrigin = minx
-    XrightOrigin = XleftOrigin + tile_span_x
-    YtopOrigin = maxy
-    YbottomOrigin = YtopOrigin - tile_span_y
-    
-    matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
-    matrix_height = math.ceil((abs(cmaxy) - abs(cminy)) / tile_span_y)
-    
-    pool = Pool(CORES)
-    for column in range(x_count, matrix_width+x_count+1, 1):
-        Ytop = YtopOrigin
-        Ybottom = YbottomOrigin
-        pool.apply_async(rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs))
-        XleftOrigin = XleftOrigin + tile_span_x
-        XrightOrigin = XrightOrigin + tile_span_x
-    pool.close()
-    pool.join()  
+        origin_cell, x_count, y_count = get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs)
+        minx, miny, maxx, maxy = origin_cell.total_bounds    
+        
+        XleftOrigin = minx
+        XrightOrigin = XleftOrigin + tile_span_x
+        YtopOrigin = maxy
+        YbottomOrigin = YtopOrigin - tile_span_y
+        
+        matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
+        matrix_height = math.ceil((abs(cmaxy) - abs(cminy)) / tile_span_y)
+        
+        pool = Pool(CORES)
+        for column in range(x_count, matrix_width+x_count+1, 1):
+            Ytop = YtopOrigin
+            Ybottom = YbottomOrigin
+            pool.apply_async(rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs))
+            XleftOrigin = XleftOrigin + tile_span_x
+            XrightOrigin = XrightOrigin + tile_span_x
+        pool.close()
+        pool.join()  
     
  
 if __name__ == "__main__": 

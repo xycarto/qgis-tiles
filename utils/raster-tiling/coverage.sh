@@ -23,7 +23,6 @@ COVERAGE_JSON="utils/raster-tiling/configs/coverages/${MATRIX}-coverage.json"
 
 jq -c '."'"$MATRIX"'"[]' $COVERAGE_JSON | while read cover;
 do
-    echo $cover
     minzoom=$(jq .minzoom <<< $cover)
     maxzoom=$(jq .maxzoom <<< $cover)
     path=$(jq .path <<< $cover)

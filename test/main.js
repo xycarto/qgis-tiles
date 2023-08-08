@@ -40,7 +40,7 @@ const mono = new TileLayer({
 const map = new Map ({
   layers: [mono],
   target: 'map',
-  pixelRatio: 1,
+  pixelRatio: 2,
   view: new View({
     projection: nztmProjection,
     center: fromLonLat([177.0,-39.5], nztmProjection),
