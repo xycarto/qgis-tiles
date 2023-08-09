@@ -10,8 +10,14 @@ RUN ?= docker run -it --rm  \
 	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE)
 
-PHONEY: index raster-tiles coverage
+PHONEY: index raster-tiles coverage gebco
 
+##### PROCESS DATA #####
+
+gebco:
+	$(RUN) bash utils/webmer-data/gebco-clean.sh
+
+##### MAKE TILES #####
 cog:	
 	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
 
