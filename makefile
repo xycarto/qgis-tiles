@@ -14,11 +14,11 @@ PHONEY: index raster-tiles coverage gebco
 
 ##### DATA TRANSFERS #####
 
-qgis-data-up:
-	$(RUN) bash utils/data-transfers/qgis-data-up.sh
+# qgis-data-up:
+# 	$(RUN) bash utils/data-transfers/qgis-data-up.sh
 
-qgis-data-down:
-	$(RUN) bash utils/data-transfers/qgis-data-down.sh
+# qgis-data-down:
+# 	$(RUN) bash utils/data-transfers/qgis-data-down.sh
 
 ##### PROCESS DATA #####
 
@@ -38,18 +38,10 @@ coverage:
 index:
 	$(RUN) python3 utils/raster-tiling/idx-matrix.py $(matrix) $(zoom)
 
-# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
-# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
-no-index:
-	$(RUN) python3 utils/raster-tiling/test-start-point.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version)
-
-# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg"
-raster-tiles:	
-	$(RUN) python3 utils/raster-tiling/render-zoom.py $(matrix) $(zoom) $(qgis) $(coverage)
-
-# make raster-tiles-test matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg"
-raster-tiles-test:	
-	$(RUN) python3 utils/raster-tiling/render-zoom-no-index.py $(matrix) $(zoom) $(qgis) $(coverage)
+# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
+# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
+raster-tiles:
+	$(RUN) python3 utils/raster-tiling/qgis-raster-tiles.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version)
 
 ##### DOCKER #####
 
@@ -67,6 +59,7 @@ docker-local: Dockerfile
 	docker tag $(BASEIMAGE) $(IMAGE)
 
 docker-push: Dockerfile
+	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
 	docker build --tag $(BASEIMAGE) - < $<  && \
 	docker tag $(BASEIMAGE) $(IMAGE) && \
 	docker push $(IMAGE)

@@ -30,7 +30,7 @@ do
     for zoom in $( seq $minzoom $maxzoom)
     do
         if [[ $zoom -ge $MINZOOM ]]; then
-            make no-index matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION
+            make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION
             if [[ $zoom -eq $MAXZOOM ]]; then
                 exit
             fi

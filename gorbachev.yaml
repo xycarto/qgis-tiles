@@ -1,3 +1,0 @@
-docker: dragonflyscience/qgis-tiler:2023-08-11
-cpus: 16
-memory: 64
