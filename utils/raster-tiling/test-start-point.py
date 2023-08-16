@@ -32,9 +32,9 @@ def get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs):
         y_bottom = y_top - tile_span_y
     
     elif MATRIX_NAME == "WebMercatorQuad":
-        x_left = matrix_zoom[0]['pointOfOrigin'][1]
+        x_left = -1 * matrix_zoom[0]['pointOfOrigin'][1]
         x_right = x_left + tile_span_x
-        y_top = matrix_zoom[0]['pointOfOrigin'][0]
+        y_top = -1 * matrix_zoom[0]['pointOfOrigin'][0]
         y_bottom = y_top - tile_span_y
     else:
         print("Invalid Projection. Must be either NZTM2000 or WebMercatorQuad")
@@ -71,13 +71,13 @@ def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_
         writeGeom = Polygon([(XleftOrigin, Ytop), (XrightOrigin, Ytop), (XrightOrigin, Ybottom), (XleftOrigin, Ybottom)]) 
         idx_inter = coverage_dissolve.loc[coverage_dissolve.intersects(writeGeom)]
         if not idx_inter.empty:
-            # print(f"Making tile {row}, {column}")
+            print(f"Making tile {row}, {column}")
             render(matrix_zoom, row, column, writeGeom, out_dir, crs)         
         
         Ytop = Ytop - tile_span_y
         Ybottom = Ybottom - tile_span_y
         
-def render(matrix_zoom, row, column, geom, out_dir, crs):        
+def render(matrix_zoom, row, column, geom, out_dir, crs):      
     xmin, ymin, xmax, ymax = geom.bounds
     
     width = math.floor(
@@ -93,7 +93,11 @@ def render(matrix_zoom, row, column, geom, out_dir, crs):
         )
     )
     
-    zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
+    if MATRIX_NAME == "NZTM2000":
+        zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
+    elif MATRIX_NAME == "WebMercatorQuad":
+        zoom_dir = os.path.join(out_dir, matrix_zoom[0]['id'])
+        
     col_dir = os.path.join(zoom_dir, str(column))
     os.makedirs(zoom_dir, exist_ok=True)
     os.makedirs(col_dir, exist_ok=True)
@@ -198,10 +202,14 @@ def main():
         XleftOrigin = minx
         XrightOrigin = XleftOrigin + tile_span_x
         YtopOrigin = maxy
-        YbottomOrigin = YtopOrigin - tile_span_y
+        YbottomOrigin = YtopOrigin - tile_span_y        
         
-        matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
-        matrix_height = math.ceil((abs(cmaxy) - abs(cminy)) / tile_span_y)
+        if MATRIX_NAME == "NZTM2000":
+            matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
+            matrix_height = math.ceil((abs(cmaxy) - abs(cminy)) / tile_span_y)
+        elif MATRIX_NAME == "WebMercatorQuad":
+            matrix_width = math.ceil((abs(cminx) + abs(cmaxx)) / tile_span_x)
+            matrix_height = math.ceil((abs(cmaxy) + abs(cminy)) / tile_span_y)
         
         pool = Pool(CORES)
         for column in range(x_count, matrix_width+x_count+1, 1):

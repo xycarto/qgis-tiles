@@ -37,3 +37,9 @@ do
         fi
     done   
 done
+
+base=$( basename ${PROJECT} .qgz )
+tiles_local="tiles/${base}/${VERSION}/${base}"
+tiles_s3="s3://qgis-tiles/tiles/${base}/${VERSION}/${base}"
+
+aws s3 sync --quiet $tiles_local $tiles_s3 --acl public-read

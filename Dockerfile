@@ -18,9 +18,11 @@ RUN apt-get -y update && apt-get install -y curl make gnupg2 pkg-config openssl 
 
 RUN apt update && apt install -y libgdal-dev
 
-RUN wget http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
+# RUN wget http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
 
-RUN dpkg -i libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
+# RUN dpkg -i libssl1.1_1.1.1f-1ubuntu2.17_amd64.deb
+
+RUN apt-get -y update && apt-get install -y openssl
 
 RUN apt update && curl -O -L https://github.com/t-rex-tileserver/t-rex/releases/download/v0.14.3/t-rex-v0.14.3-x86_64-linux-gnu.tar.gz && tar xf t-rex-v0.14.3-x86_64-linux-gnu.tar.gz -C /usr/local/bin
 
@@ -45,5 +47,14 @@ RUN sed -i -e 's/# en_NZ.UTF-8 UTF-8/en_NZ.UTF-8 UTF-8/' /etc/locale.gen && loca
 RUN sed -i 's/C.UTF-8/en_NZ.UTF-8/' /etc/postgresql/14/main/postgresql.conf
 
 RUN apt install -y jq
+
+RUN apt update && apt install -y nodejs npm
+RUN npm install -g n
+RUN n stable
+RUN npm install -g npm@latest
+RUN npm cache clean --force
+
+RUN mkdir /.npm
+RUN chmod ugo+w /.npm
 
 ENV QT_QPA_PLATFORM=offscreen

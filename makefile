@@ -1,7 +1,7 @@
 -include .creds
 
 BASEIMAGE := xycarto/qgis-tiler
-IMAGE := $(BASEIMAGE):2023-04-22
+IMAGE := $(BASEIMAGE):2023-08-11
 
 RUN ?= docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \
@@ -11,6 +11,14 @@ RUN ?= docker run -it --rm  \
 	-w /work $(IMAGE)
 
 PHONEY: index raster-tiles coverage gebco
+
+##### DATA TRANSFERS #####
+
+qgis-data-up:
+	$(RUN) bash utils/data-transfers/qgis-data-up.sh
+
+qgis-data-down:
+	$(RUN) bash utils/data-transfers/qgis-data-down.sh
 
 ##### PROCESS DATA #####
 
@@ -22,6 +30,7 @@ cog:
 	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
 
 # time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=10 maxzoom=11 version=v1
+# time make coverage epsg=3857 qgis="qgis/world-webmer.qgz" minzoom=0 maxzoom=2 version=v1
 coverage:
 	$(RUN) bash utils/raster-tiling/coverage.sh $(epsg) $(qgis) $(minzoom) $(maxzoom) $(version)
 
@@ -29,6 +38,7 @@ coverage:
 index:
 	$(RUN) python3 utils/raster-tiling/idx-matrix.py $(matrix) $(zoom)
 
+# make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
 # make no-index matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
 no-index:
 	$(RUN) python3 utils/raster-tiling/test-start-point.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version)
@@ -41,6 +51,8 @@ raster-tiles:
 raster-tiles-test:	
 	$(RUN) python3 utils/raster-tiling/render-zoom-no-index.py $(matrix) $(zoom) $(qgis) $(coverage)
 
+##### DOCKER #####
+
 test-local: Dockerfile
 	docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \
@@ -50,15 +62,14 @@ test-local: Dockerfile
 	-w /work $(IMAGE)
 	bash
 	
-tiler-local: Dockerfile
+docker-local: Dockerfile
 	docker build --tag $(BASEIMAGE) - < $<  && \
 	docker tag $(BASEIMAGE) $(IMAGE)
 
-tiler-push: Dockerfile
-	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
+docker-push: Dockerfile
 	docker build --tag $(BASEIMAGE) - < $<  && \
 	docker tag $(BASEIMAGE) $(IMAGE) && \
 	docker push $(IMAGE)
 
-tiler-pull:
+docker-pull:
 	docker pull $(IMAGE)
