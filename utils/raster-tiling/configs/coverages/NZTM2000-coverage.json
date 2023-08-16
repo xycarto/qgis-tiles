@@ -1,0 +1,23 @@
+{
+    "NZTM2000": [
+        {
+            "identifier": "full-nz",
+            "minzoom": 0,
+            "maxzoom": 7,
+            "path": "data/coverage/NZTM2000/full-nz.gpkg"
+        },
+        {
+            "identifier": "mid-nz",
+            "minzoom": 8,
+            "maxzoom": 9,
+            "path": "data/coverage/NZTM2000/mid-nz.gpkg"
+        },
+        {
+            "identifier": "small-nz",
+            "minzoom": 10,
+            "maxzoom": 11,
+            "path": "data/coverage/NZTM2000/small-nz.gpkg"
+        }
+        
+    ]
+}

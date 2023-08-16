@@ -9,6 +9,7 @@ web-docs/cog/*
 tiles*
 *.lock
 *.h5
+*pycache*
 
 # VSCode
 .vscode/*
