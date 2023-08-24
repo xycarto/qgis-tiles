@@ -9,6 +9,9 @@ MINZOOM=$3
 MAXZOOM=$4
 VERSION=$5
 
+NPROC=$(nproc)
+CORES=$((${NPROC}-1))
+
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then
     MATRIX="NZTM2000"
@@ -30,7 +33,7 @@ do
     for zoom in $( seq $minzoom $maxzoom)
     do
         if [[ $zoom -ge $MINZOOM ]]; then
-            make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION
+            make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION cores=$CORES
             if [[ $zoom -eq $MAXZOOM ]]; then
                 exit
             fi
@@ -38,8 +41,20 @@ do
     done   
 done
 
-# base=$( basename ${PROJECT} .qgz )
-# tiles_local="tiles/${base}/${VERSION}/${base}"
-# tiles_s3="s3://qgis-tiles/tiles/${base}/${VERSION}/${base}"
+# # ZIP suff
+# echo "Zippng tiles..."
+# ZIP_DIR="tiles/zip"
+# BUCKET="qgis-tiles"
 
-# aws s3 sync --quiet $tiles_local $tiles_s3 --acl public-read
+# base=$( basename ${PROJECT} .qgz )
+# s3zip="${ZIP_DIR}/${base}.zip"
+# tiles_local="tiles/${base}/${VERSION}"
+
+# mkdir -p $ZIP_DIR
+
+# cd ${tiles_local} && zip -q -FS -r ../../../${s3zip} ${base}
+
+# cd -
+
+# aws s3 cp ${s3zip} s3://${BUCKET}/${s3zip}
+

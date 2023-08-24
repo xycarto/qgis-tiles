@@ -9,13 +9,13 @@
         {
             "identifier": "mid-nz",
             "minzoom": 8,
-            "maxzoom": 9,
+            "maxzoom": 11,
             "path": "data/coverage/NZTM2000/mid-nz.gpkg"
         },
         {
             "identifier": "small-nz",
-            "minzoom": 10,
-            "maxzoom": 11,
+            "minzoom": 12,
+            "maxzoom": 14,
             "path": "data/coverage/NZTM2000/small-nz.gpkg"
         }
         

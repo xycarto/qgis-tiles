@@ -1,7 +1,7 @@
 -include .creds
 
 BASEIMAGE := xycarto/qgis-tiler
-IMAGE := $(BASEIMAGE):2023-08-11
+IMAGE := $(BASEIMAGE):2023-08-24
 
 RUN ?= docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \
@@ -10,41 +10,20 @@ RUN ?= docker run -it --rm  \
 	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE)
 
-PHONEY: index raster-tiles coverage gebco
-
-##### DATA TRANSFERS #####
-
-# qgis-data-up:
-# 	$(RUN) bash utils/data-transfers/qgis-data-up.sh
-
-# qgis-data-down:
-# 	$(RUN) bash utils/data-transfers/qgis-data-down.sh
-
-##### PROCESS DATA #####
-
-gebco:
-	$(RUN) bash utils/webmer-data/gebco-clean.sh
+PHONEY: 
 
 ##### MAKE TILES #####
-cog:	
-	$(RUN) bash utils/render-cog.sh "qgis/full-nz-mono"
-
 # time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=10 maxzoom=11 version=v1
 # time make coverage epsg=3857 qgis="qgis/world-webmer.qgz" minzoom=0 maxzoom=2 version=v1
 coverage:
 	$(RUN) bash utils/raster-tiling/coverage.sh $(epsg) $(qgis) $(minzoom) $(maxzoom) $(version)
 
-# make index matrix=NZTM2000 zoom=1
-index:
-	$(RUN) python3 utils/raster-tiling/idx-matrix.py $(matrix) $(zoom)
-
-# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
-# make raster-tiles matrix=NZTM2000 zoom=0 qgis=qgis/full-nz-mono.qgz coverage="data/coverage/full-nz.gpkg" version="v1"
+# make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION cores=$CORES
 raster-tiles:
-	$(RUN) python3 utils/raster-tiling/qgis-raster-tiles.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version)
+	$(RUN) python3 utils/raster-tiling/raster-tiler.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version) $(cores)
+	
 
 ##### DOCKER #####
-
 test-local: Dockerfile
 	docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \

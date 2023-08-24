@@ -48,13 +48,8 @@ RUN sed -i 's/C.UTF-8/en_NZ.UTF-8/' /etc/postgresql/14/main/postgresql.conf
 
 RUN apt install -y jq
 
-RUN apt update && apt install -y nodejs npm
-RUN npm install -g n
-RUN n stable
-RUN npm install -g npm@latest
-RUN npm cache clean --force
+RUN pip3 install boto3
 
-RUN mkdir /.npm
-RUN chmod ugo+w /.npm
+RUN apt-get update && apt-get install -y unzip zip
 
 ENV QT_QPA_PLATFORM=offscreen
