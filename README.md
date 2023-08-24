@@ -118,7 +118,7 @@ Necessary for the coverage json is a `GPKG` file covering the region a user desi
 
 The main processing happens here: https://github.com/xycarto/qgis-tiles/blob/main/utils/raster-tiling/raster-tiler.py
 
-Raster tile caches are automatically sent to the `tiles` directory using the format `tiles/[project_name]/[version]/[project_name]/[zoom_level]/[column]/[row].png`. Manual modifications may be made in this file to produce JPG utputs if desired. In the future, this will be set as an input variable.
+Raster tile caches are automatically sent to the `tiles` directory using the format `tiles/[project_name]/[version]/[project_name]/[zoom_level]/[column]/[row].png`. Manual modifications may be made in this file to produce JPG outputs if desired. In the future, this will be set as an input variable.
 
 The tiling method employs a mutli-threaded process using all availaable cores on the machine on which it runs. If fewer cores are desired due to resource constraints, a modification can be made here: https://github.com/xycarto/qgis-tiles/blob/1d6736541279e870e78b18a2b475ede81be0e98a/utils/raster-tiling/raster-tiler.py#L256
 
@@ -135,8 +135,6 @@ The tiling method employs a mutli-threaded process using all availaable cores on
 - An unstable example for consumption into a web clientusing Openlayers6 can be found [here](https://github.com/xycarto/qgis-tiles/tree/main/test) for NZTM.
 
 ## Upcoming Modifications
-
-- Input to automatically upload tile chaces as ZIP
 
 - More user friendly tooling
 
