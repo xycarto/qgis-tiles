@@ -1,6 +1,6 @@
 # QGIS to Raster Tiles
 
-Method to pre-render raster tile chaches direct from QGIS project.
+Method to pre-render raster tile caches direct from QGIS project.
 
 - Tested in Linux Enviroment
 - Project is still under development and subject to change without notice
@@ -31,9 +31,14 @@ Method to pre-render raster tile chaches direct from QGIS project.
 
 ## Basic Method
 
+```
+git clone git@github.com:xycarto/qgis-tiles.git
+make docker-pull
+```
+
 1. Create QGIS project in desired projection
 1. Create coverage files (GPKG polygons)
-1. Update coverage JSON for processing. See here for example: https://github.com/dragonfly-science/qgis-tiles/tree/main/utils/raster-tiling/configs/coverages
+1. Update coverage JSON for processing. See [here](https://github.com/xycarto/qgis-tiles/tree/main/utils/raster-tiling/configs/coverages) for example.
 1. Process from `makefile`
 
 ## Outputs
@@ -50,7 +55,7 @@ time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=4 ve
 
 ## Process Explanation
 
-The process creates pre-rendered raster tile caches from a QGIS project.  The main process is controlled from the `coverage.sh` [file](https://github.com/dragonfly-science/qgis-tiles/blob/main/utils/raster-tiling/coverage.sh) and launched by using `make coverage`. Required for `make coverage` is:
+The process creates pre-rendered raster tile caches from a QGIS project.  The main process is controlled from the `coverage.sh` [file](https://github.com/xycarto/qgis-tiles/blob/main/utils/raster-tiling/coverage.sh) and launched by using `make coverage`. Required for `make coverage` is:
 
 ```
 epsg=[Either 2193 or 3857]
@@ -60,7 +65,7 @@ maxzoom=[int value]
 version=[version like v1]
 ```
 
-The `coverage.sh` relies on having a coverage JSON in place, named the same as the Tile Matrix you plan to use. For example, if users are working in NZTM(2193), the [Tile Matrix](https://github.com/dragonfly-science/qgis-tiles/tree/main/utils/raster-tiling/configs/matrix) used is "NZTM2000", therefore, the coverage JSON is required to be named `NZTM2000-coverage.json` and must sit in this directory: `raster-tiling/configs/coverages`. Unfortunately, this is necessary for now, but will change in the future.
+The `coverage.sh` relies on having a coverage JSON in place, named the same as the Tile Matrix you plan to use. For example, if users are working in NZTM(2193), the [Tile Matrix](https://github.com/xycarto/qgis-tiles/tree/main/utils/raster-tiling/configs/matrix) used is "NZTM2000", therefore, the coverage JSON is required to be named `NZTM2000-coverage.json` and must sit in this directory: `raster-tiling/configs/coverages`. Unfortunately, this is necessary for now, but will change in the future.
 
 The coverage JSON might look like the following:
 
@@ -110,11 +115,11 @@ Single Coverage
 
 Necessary for the coverage json is a `GPKG` file covering the region a user desires to tile.  The GPKG file **MUST** be in the same projection as the QGIS project. Users will need to create their own coverage GPKGs and set the path in the JSON.  
 
-The main processing happens here: https://github.com/dragonfly-science/qgis-tiles/blob/main/utils/raster-tiling/raster-tiler.py
+The main processing happens here: https://github.com/xycarto/qgis-tiles/blob/main/utils/raster-tiling/raster-tiler.py
 
 Raster tile caches are automatically sent to the `tiles` directory using the format `tiles/[project_name]/[version]/[project_name]/[zoom_level]/[column]/[row].png`. Manual modifications may be made in this file to produce JPG utputs if desired. In the future, this will be set as an input variable.
 
-The tiling method employs a mutli-threaded process using all availaable cores on the machine on which it runs. If fewer cores are desired due to resource constraints, a modification can be made here: https://github.com/dragonfly-science/qgis-tiles/blob/e04126208478cebe6ebba26c8a4758fecfc45c38/utils/raster-tiling/raster-tiler.py#L256
+The tiling method employs a mutli-threaded process using all availaable cores on the machine on which it runs. If fewer cores are desired due to resource constraints, a modification can be made here: https://github.com/xycarto/qgis-tiles/blob/1d6736541279e870e78b18a2b475ede81be0e98a/utils/raster-tiling/raster-tiler.py#L256
 
 ## Things to know
 
@@ -126,7 +131,7 @@ The tiling method employs a mutli-threaded process using all availaable cores on
 
 - Users are resposible for their own uploads of caches for access to a web client.
 
-- An unstable example for consumption into a web clientusing Openlayers6 can be found [here](https://github.com/dragonfly-science/qgis-tiles/tree/main/test) for NZTM.
+- An unstable example for consumption into a web clientusing Openlayers6 can be found [here](https://github.com/xycarto/qgis-tiles/tree/main/test) for NZTM.
 
 ## Upcoming Modifications
 
