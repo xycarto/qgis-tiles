@@ -20,7 +20,6 @@ Method to pre-render raster tile caches direct from QGIS project.
 - Single line command to process
 - Multi-threaded
 - WMTS
-- Gateaux processing methods
 
 ## Limitations
 
