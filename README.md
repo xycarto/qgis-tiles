@@ -2,6 +2,7 @@
 
 Method to pre-render raster tile caches direct from QGIS project.
 
+- This is not yet a fully developed repo for easy use. There are plenty of bugs, hard coded items, and tricky steps. 
 - Tested in Linux Enviroment
 - Project is still under development and subject to change without notice
 
@@ -146,3 +147,9 @@ The tiling method employs a mutli-threaded process using all availaable cores on
 - Custom projection vector tiling
 
 - Automatic WMTS creation
+
+## Contact
+
+- Like the method and want it further developed? Contact me at: ian@xycarto or put something in the issues
+
+- Currently, this project is a labour of love and is developed in my spare time. I am happy to hear and accept changes from anyone on how to make the tool better. Funding is likley to make those changes/fixes happen. 
