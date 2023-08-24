@@ -146,6 +146,8 @@ The tiling method employs a mutli-threaded process using all availaable cores on
 
 - Automatic WMTS creation
 
+- Dynmaic tiling on the fly
+
 ## Contact
 
 - Like the method and want it further developed? Contact me at: ian@xycarto or put something in the issues
