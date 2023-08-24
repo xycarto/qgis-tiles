@@ -24,6 +24,7 @@ Method to pre-render raster tile caches direct from QGIS project.
 
 ## Limitations
 
+- Limited to generating static pre-rendered caches. Tiling on the fly in the works but not likely any time soon.
 - Method only for NZTM(2193) or Web Mercator(3857) Projections
 - Some naming for necessary files still hard coded into process
 - All input variables are required. Currently no defult settings
