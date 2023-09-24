@@ -10,7 +10,7 @@ MAXZOOM=$4
 VERSION=$5
 
 NPROC=$(nproc)
-CORES=$((${NPROC}-1))
+CORES=$((${NPROC}-2))
 
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then
@@ -33,7 +33,7 @@ do
     for zoom in $( seq $minzoom $maxzoom)
     do
         if [[ $zoom -ge $MINZOOM ]]; then
-            make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION cores=$CORES
+            make raster-tiles matrix=${MATRIX} zoom=${zoom} qgis=${PROJECT} coverage=${path} version=$VERSION cores=$CORES        
             if [[ $zoom -eq $MAXZOOM ]]; then
                 exit
             fi

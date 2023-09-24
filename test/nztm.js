@@ -16,7 +16,7 @@ proj4.defs("EPSG:2193","+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +
 register(proj4);
 const nztmProjection = getProjection('EPSG:2193');
 var origin = [-1000000, 10000000];
-var resolutions = [ 8960.0, 4480.0, 2240.0, 1120.0, 560, 280, 140, 70, 28, 14, 7, 2.8];
+var resolutions = [ 8960.0, 4480.0, 2240.0, ];
 const matrixIds = [0, 1, 2];
 
 const xyzUrl = "http://127.0.0.1:8081/full-nz-mono/v1/full-nz-mono/{z}/{x}/{y}.png"

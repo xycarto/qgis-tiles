@@ -3,8 +3,9 @@ import os
 import sys
 os.environ['USE_PYGEOS'] = '0'
 import geopandas as gp
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 from multiprocessing.pool import ThreadPool
+from multiprocessing import set_start_method  
 import math
 from shapely.geometry import Polygon
 from qgis.core import *
@@ -12,6 +13,12 @@ from qgis.gui import *
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtGui import *
 from threading import Thread
+from time import sleep
+import gc
+from concurrent.futures import ThreadPoolExecutor    
+import pandas as pd
+import concurrent.futures
+# from threading import Lock
 
 # python3 utils/raster-tiling/test-start-point.py NZTM2000 1 qgis/full-nz-mono.qgz
 
@@ -64,72 +71,73 @@ def get_origin_cell(matrix_zoom, tile_span_x, tile_span_y, cmaxy, cminx, crs):
     
     return origin_cell, x_count, y_count
 
-def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs):    
+def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs, lock):   
     for row in range(y_count, matrix_height+y_count+1, 1):
         writeGeom = Polygon([(XleftOrigin, Ytop), (XrightOrigin, Ytop), (XrightOrigin, Ybottom), (XleftOrigin, Ybottom)]) 
         # idx_inter = coverage_dissolve.loc[coverage_dissolve.intersects(writeGeom)]
         if coverage_dissolve.intersects(writeGeom).values[0]:
             # print(f"Making Row: {row}, Column: {column}")
-            item = (matrix_zoom, row, column, writeGeom, out_dir, crs)
+            item = (matrix_zoom, row, column, writeGeom, out_dir, crs, lock)
             DF.append(item)
-            #render(matrix_zoom, row, column, writeGeom, out_dir, crs)                     
+            # render(matrix_zoom, row, column, writeGeom, out_dir, crs)                     
         
         Ytop = Ytop - tile_span_y
         Ybottom = Ybottom - tile_span_y
         
     
         
-def render(matrix_zoom, row, column, geom, out_dir, crs):      
+def render(matrix_zoom, row, column, geom, out_dir, crs, lock):      
     # print(f"Rendering Row: {row}, Column: {column}")
-    xmin, ymin, xmax, ymax = geom.bounds
-    
-    width = math.floor(
-        abs(
-            (((xmin - xmax) * METRE_TO_INCH) / float(matrix_zoom[0]['scaleDenominator']))
-            * DPI
-        )
-        )
-    height = math.floor(
-        abs(
-            (((ymin - ymax) * METRE_TO_INCH) / float(matrix_zoom[0]['scaleDenominator']))
-            * DPI
-        )
-    )
-    
-    if MATRIX_NAME == "NZTM2000":
-        zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
-    elif MATRIX_NAME == "WebMercatorQuad":
-        zoom_dir = os.path.join(out_dir, matrix_zoom[0]['id'])
+    with lock:
+        xmin, ymin, xmax, ymax = geom.bounds
         
-    col_dir = os.path.join(zoom_dir, str(column))
-    os.makedirs(zoom_dir, exist_ok=True)
-    os.makedirs(col_dir, exist_ok=True)
-    
-    image_path = os.path.join(col_dir, f"{str(row)}.png")
-    
-    # Start Map Settings
-    SETTINGS.setOutputSize(QSize(width, height))
-    
-    p = QPainter()
-    img = QImage(QSize(width, height), QImage.Format_ARGB32_Premultiplied)
-    p.begin(img)        
-    p.setRenderHint(QPainter.Antialiasing)
+        width = math.floor(
+            abs(
+                (((xmin - xmax) * METRE_TO_INCH) / float(matrix_zoom[0]['scaleDenominator']))
+                * DPI
+            )
+            )
+        height = math.floor(
+            abs(
+                (((ymin - ymax) * METRE_TO_INCH) / float(matrix_zoom[0]['scaleDenominator']))
+                * DPI
+            )
+        )
+        
+        if MATRIX_NAME == "NZTM2000":
+            zoom_dir = os.path.join(out_dir, matrix_zoom[0]['identifier'])
+        elif MATRIX_NAME == "WebMercatorQuad":
+            zoom_dir = os.path.join(out_dir, matrix_zoom[0]['id'])
+            
+        col_dir = os.path.join(zoom_dir, str(column))
+        os.makedirs(zoom_dir, exist_ok=True)
+        os.makedirs(col_dir, exist_ok=True)
+        
+        image_path = os.path.join(col_dir, f"{str(row)}.png")
+        
+        # Start Map Settings
+        SETTINGS.setOutputSize(QSize(width, height))
+        
+        p = QPainter()
+        img = QImage(QSize(width, height), QImage.Format_ARGB32_Premultiplied)
+        p.begin(img)        
+        p.setRenderHint(QPainter.Antialiasing)
 
-    # Set layers to render. Only renders "checked" layers
+        # Set layers to render. Only renders "checked" layers
 
-    # Set Extent
-    SETTINGS.setExtent(QgsRectangle(xmin, ymin, xmax, ymax))
-    
-    # setup qgis map renderer
-    # print("Rendering...")
-    render = QgsMapRendererCustomPainterJob(SETTINGS, p)
-    render.start()
-    render.waitForFinished()
-    p.end()
+        # Set Extent
+        SETTINGS.setExtent(QgsRectangle(xmin, ymin, xmax, ymax))
+        
+        # setup qgis map renderer
+        # print("Rendering...")
+        render = QgsMapRendererCustomPainterJob(SETTINGS, p)
+        render.start()
+        render.waitForFinished()
+        p.end()
 
-    # save the image
-    # print("Saving Image...")
-    img.save(image_path, "png")    
+        # save the image
+        # print("Saving Image...")
+        img.save(image_path, "png") 
 
 def get_coverage_extent(row, crs):  
     coverage_feature = gp.GeoDataFrame([row], crs = crs)     
@@ -180,7 +188,7 @@ def get_crs():
     return crs
 
 
-def main():
+def main(lock):
     print(f"Making tiles for Zoom {ZOOM}...")
     
     crs = get_crs()
@@ -220,20 +228,15 @@ def main():
         for column in range(x_count, matrix_width+x_count+1, 1):
             Ytop = YtopOrigin
             Ybottom = YbottomOrigin
-            thread = Thread(target=rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs))
-            thread.start()
-            thread.join()
+            # thread = Thread(target=rows, args=(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs))
+            
+            # # thread.start()
+            # # thread.join()
+            rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_dir, tile_span_y, Ytop, Ybottom, y_count, matrix_height, crs, lock)
             XleftOrigin = XleftOrigin + tile_span_x
             XrightOrigin = XrightOrigin + tile_span_x
     
-    # print(DF)
-    print("Rendering...")
-    with ThreadPool() as pool:
-        # prepare arguments
-        # items = [(index, gtile) for index, gtile in gpGrid.iterrows()]
-        # issue tasks to the process pool and wait for tasks to complete
-        result = pool.starmap_async(render, DF, chunksize=None)
-        result.wait()
+    
 
  
 if __name__ == "__main__": 
@@ -271,6 +274,26 @@ if __name__ == "__main__":
     QGIS = QgsProject.instance()
 
     QGIS.read(QGIS_PATH)
-        
-    main()
     
+    lock = Lock()   
+        
+    main(lock)
+  
+    # print("Rendering...")
+    # for i in DF:
+    #     print(i)
+
+    
+    # ul = pd.Series(DF).drop_duplicates().to_list()
+
+    with ThreadPool() as pool:
+        result = pool.starmap_async(render, DF, chunksize=None)
+        result.wait()
+    #     future = {pool.submit(render, thing): thing for thing in DF}
+    #     print(future)
+    #     # for f in concurrent.futures.as_completed(future):
+    #     #     print(f)
+    #     #     u = future[f]
+    #         # data = f.result()
+        
+    # # print("Done...")    
