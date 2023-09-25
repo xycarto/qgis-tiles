@@ -16,7 +16,7 @@ proj4.defs("EPSG:2193","+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +
 register(proj4);
 const nztmProjection = getProjection('EPSG:2193');
 var origin = [ -1000000, 10000000];
-var resolutions = [ 8960, 4480, 2240, 1120, 560, 280 ];
+var resolutions = [ 8960, 4480, 2240, 1120, 560, 280, 140, 70, 28 ];
 const matrixIds = [0, 1, 2];
 
 const xyzUrl = "http://localhost:8081/full-nz-mono/v1/full-nz-mono/{z}/{x}/{y}.png"
@@ -44,7 +44,7 @@ const map = new Map ({
     projection: nztmProjection,
     center: fromLonLat([177.0,-39.5], nztmProjection),
     zoom: 0,
-    minResolution: 280,
+    minResolution: 28,
     maxResolution: 8960,
     constrainResolution: true,
     enableRotation: false,
