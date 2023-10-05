@@ -2,7 +2,7 @@
 
 # bash build.sh
 
-source ../.creds
+source .creds
 
 echo "Cloning Git repo..."
 git clone --branch terraform https://${TOKEN}@github.com/xycarto/qgis-tiles.git
@@ -17,7 +17,7 @@ make docker-pull
 mkdir -p qgis
 
 echo "Downloading data..."
-aws s3 cp --recursive s3://xycarto-qgis-tiles/qgis qgis
+make qgis-download
 
 echo "Rendering tiles..."
 make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=0 version=v1
