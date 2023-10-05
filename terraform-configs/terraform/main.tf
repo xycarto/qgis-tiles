@@ -18,8 +18,8 @@ data "template_file" "user_data" {
 }
 
 resource "aws_instance" "app_server" {
-  ami                     = "ami-0fcf52bcf5db7b003"
-  instance_type           = "t2.medium"
+  ami                     = "ami-03f65b8614a860c29"
+  instance_type           = "c5.xLarge"
   user_data               = data.template_file.user_data.rendered
   security_groups         = ["qgis-tiles"]
   key_name                = var.key_name
@@ -31,7 +31,7 @@ resource "aws_instance" "app_server" {
 }
 
 resource "aws_ebs_volume" "qgis-tiles" {
-  availability_zone = "us-west-2"
+  availability_zone = "us-west-2a"
   size              = 200
   tags = {
     Name = "qgis-tiles"
