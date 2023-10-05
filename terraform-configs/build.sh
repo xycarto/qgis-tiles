@@ -17,9 +17,9 @@ make docker-pull
 mkdir -p qgis
 
 echo "Downloading data..."
-aws s3 cp --recursive --quiet s3://xycarto-qgis-tiles/qgis qgis
+aws s3 cp --recursive s3://xycarto-qgis-tiles/qgis qgis
 
 echo "Rendering tiles..."
-make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=1 version=v1
+make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=0 version=v1
 
 exit

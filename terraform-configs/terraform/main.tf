@@ -19,7 +19,7 @@ data "template_file" "user_data" {
 
 resource "aws_instance" "app_server" {
   ami                     = "ami-03f65b8614a860c29"
-  instance_type           = "c5.xLarge"
+  instance_type           = "c5.xlarge"
   user_data               = data.template_file.user_data.rendered
   security_groups         = ["qgis-tiles"]
   key_name                = var.key_name
