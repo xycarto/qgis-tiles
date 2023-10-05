@@ -20,7 +20,7 @@ RUN_TERRAFORM ?= docker run -it --rm  \
 	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE_TERRAFORM)
 
-PHONEY: 
+.PHONY: coverage
 
 ##### MAKE TILES #####
 # time make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=10 maxzoom=11 version=v1

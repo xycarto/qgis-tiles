@@ -29,3 +29,11 @@ resource "aws_instance" "app_server" {
     Name = var.instance_name
   }
 }
+
+resource "aws_ebs_volume" "qgis-tiles" {
+  availability_zone = "us-west-2"
+  size              = 200
+  tags = {
+    Name = "qgis-tiles"
+  }
+}
