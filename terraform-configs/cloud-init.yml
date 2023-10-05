@@ -1,0 +1,20 @@
+#cloud-config
+locale: en_NZ.UTF-8
+timezone: Pacific/Auckland
+package_upgrade: true
+
+groups:
+  - docker
+
+system_info:
+  default_user:
+    groups: [docker]
+
+packages:
+  - awscli
+  - docker.io
+  - build-essential
+  - make
+
+runcmd:
+  - [ pip3, install, awscli, --upgrade ]

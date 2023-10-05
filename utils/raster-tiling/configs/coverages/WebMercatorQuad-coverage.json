@@ -4,7 +4,7 @@
             "identifier": "full-world",
             "minzoom": 0,
             "maxzoom": 10,
-            "path": "data/coverage/WebMercatorQuad/world-full.gpkg"
+            "path": "coverage/WebMercatorQuad/world-full.gpkg"
         }
         
     ]

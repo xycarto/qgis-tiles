@@ -3,12 +3,22 @@
 BASEIMAGE := xycarto/qgis-tiler
 IMAGE := $(BASEIMAGE):2023-08-24
 
+BASEIMAGE_TERRAFORM := xycarto/terraform
+IMAGE_TERRAFORM := $(BASEIMAGE):2023-10-05
+
 RUN ?= docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \
 	-e DISPLAY=$$DISPLAY \
 	--env-file .creds \
 	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE)
+
+RUN_TERRAFORM ?= docker run -it --rm  \
+	--user=$$(id -u):$$(id -g) \
+	-e DISPLAY=$$DISPLAY \
+	--env-file .creds \
+	-e RUN= -v $$(pwd):/work \
+	-w /work $(IMAGE_TERRAFORM)
 
 PHONEY: 
 
@@ -20,10 +30,13 @@ coverage:
 
 raster-tiles:
 	$(RUN) python3 utils/raster-tiling/raster-tiler.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version) $(cores)
+
+terraform:
+	$(RUN_TERRAFORM) bash terraform-configs/build-infra.sh
 	
 
 ##### DOCKER #####
-test-local: Dockerfile
+test-local: docker/Dockerfile
 	docker run -it --rm  \
 	--user=$$(id -u):$$(id -g) \
 	-e DISPLAY=$$DISPLAY \
@@ -32,15 +45,30 @@ test-local: Dockerfile
 	-w /work $(IMAGE)
 	bash
 	
-docker-local: Dockerfile
-	docker build --tag $(BASEIMAGE) - < $<  && \
+docker-local: docker/Dockerfile
+	docker build --tag $(BASEIMAGE) - < docker/Dockerfile  && \
 	docker tag $(BASEIMAGE) $(IMAGE)
 
-docker-push: Dockerfile
+docker-push: docker/Dockerfile
 	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
-	docker build --tag $(BASEIMAGE) - < $<  && \
+	docker build --tag $(BASEIMAGE) - < docker/Dockerfile  && \
 	docker tag $(BASEIMAGE) $(IMAGE) && \
 	docker push $(IMAGE)
 
 docker-pull:
+	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
 	docker pull $(IMAGE)
+
+##### DOCKER TERRAFORM #####
+docker-local-terraform: docker/Dockerfile.terraform
+	docker build --tag $(BASEIMAGE_TERRAFORM) - < docker/Dockerfile.terraform && \
+	docker tag $(BASEIMAGE_TERRAFORM) $(IMAGE_TERRAFORM)
+
+docker-push-terraform: Dockerfile.terraform
+	echo $(DOCKER_PW) | docker login --username xycarto --password-stdin
+	docker build --tag $(BASEIMAGE_TERRAFORM) - < docker/Dockerfile.terraform && \
+	docker tag $(BASEIMAGE_TERRAFORM) $(IMAGE_TERRAFORM) && \
+	docker push $(IMAGE_TERRAFORM)
+
+docker-pull-terraform:
+	docker pull $(IMAGE_TERRAFORM)
