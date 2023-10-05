@@ -2,7 +2,7 @@
 
 # bash build.sh
 
-source .creds
+source ../.creds
 
 echo "Cloning Git repo..."
 git clone --branch terraform https://${TOKEN}@github.com/xycarto/qgis-tiles.git
