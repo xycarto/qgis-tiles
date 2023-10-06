@@ -10,7 +10,7 @@ MAXZOOM=$4
 VERSION=$5
 
 NPROC=$(nproc)
-CORES=$((${NPROC}-2))
+CORES=$((${NPROC}-10))
 
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then

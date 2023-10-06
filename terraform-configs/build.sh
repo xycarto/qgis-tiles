@@ -20,6 +20,6 @@ echo "Downloading data..."
 make qgis-download
 
 echo "Rendering tiles..."
-make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=0 version=v1
+make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=12 version=v1
 
 exit
