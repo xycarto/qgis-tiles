@@ -27,7 +27,7 @@ resource "aws_instance" "qgis_tiles" {
 
   # root disk
   root_block_device {
-    volume_size           = "200"
+    volume_size           = "250"
     volume_type           = "gp3"
     encrypted             = true
     delete_on_termination = true
