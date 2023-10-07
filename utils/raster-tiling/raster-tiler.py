@@ -89,7 +89,7 @@ def rows(XleftOrigin, XrightOrigin, coverage_dissolve, matrix_zoom, column, out_
         
 def render(id, matrix_zoom, row, column, geom, out_dir, crs):    
     # print(f"Rendering Row: {row}, Column: {column}")
-    print(id, flush=True)
+    # print(id, flush=True)
     xmin, ymin, xmax, ymax = geom.bounds
     
     width = math.floor(
