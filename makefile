@@ -6,14 +6,14 @@ IMAGE := $(BASEIMAGE):2023-08-24
 BASEIMAGE_TERRAFORM := xycarto/terraform
 IMAGE_TERRAFORM := $(BASEIMAGE):2023-10-05
 
-RUN ?= docker run -it --rm  \
+RUN ?= docker run --rm  \
 	--user=$$(id -u):$$(id -g) \
 	-e DISPLAY=$$DISPLAY \
 	--env-file .creds \
 	-e RUN= -v $$(pwd):/work \
 	-w /work $(IMAGE)
 
-RUN_TERRAFORM ?= docker run -it --rm  \
+RUN_TERRAFORM ?= docker run --rm  \
 	--user=$$(id -u):$$(id -g) \
 	-e DISPLAY=$$DISPLAY \
 	--env-file .creds \
