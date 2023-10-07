@@ -10,7 +10,7 @@ MAXZOOM=$4
 VERSION=$5
 
 NPROC=$(nproc)
-CORES=$((${NPROC}-12))
+CORES=$((${NPROC}-2))
 
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then
@@ -41,8 +41,8 @@ do
     done   
 done
 
-echo "Copying tiles to S3..."
-aws s3 cp --recursive tiles s3://xyc-tile-service-raster
+# echo "Copying tiles to S3..."
+# aws s3 cp --recursive tiles s3://xyc-tile-service-raster
 
 # # ZIP suff
 # echo "Zippng tiles..."
