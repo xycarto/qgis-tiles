@@ -45,23 +45,22 @@ do
     done   
 done
 
-echo "Copying tiles to S3..."
-aws s3 cp --recursive tiles/${base} s3://xyc-tile-service-raster/${base} --acl public-read
+# echo "Copying tiles to S3..."
+# aws s3 cp --recursive tiles/${base} s3://xyc-tile-service-raster/${base} --acl public-read
 
-# # ZIP suff
-# echo "Zippng tiles..."
-# ZIP_DIR="tiles/zip"
-# BUCKET="qgis-tiles"
+# ZIP suff
+echo "Zippng tiles..."
+ZIP_DIR="tiles/zip"
+BUCKET="qgis-tiles"
 
-# base=$( basename ${PROJECT} .qgz )
-# s3zip="${ZIP_DIR}/${base}.zip"
-# tiles_local="tiles/${base}/${VERSION}"
+s3zip="${ZIP_DIR}/${base}.zip"
+tiles_local="tiles/${base}/${VERSION}"
 
-# mkdir -p $ZIP_DIR
+mkdir -p $ZIP_DIR
 
-# cd ${tiles_local} && zip -q -FS -r ../../../${s3zip} ${base}
+cd ${tiles_local} && zip -q -FS -r ../../../${s3zip} ${base}
 
-# cd -
+cd -
 
-# aws s3 cp ${s3zip} s3://${BUCKET}/${s3zip}
+aws s3 cp ${s3zip} s3://${BUCKET}/${s3zip}
 

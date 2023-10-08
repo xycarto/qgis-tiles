@@ -32,7 +32,7 @@ raster-tiles:
 	$(RUN) python3 utils/raster-tiling/raster-tiler.py  $(matrix) $(zoom) $(qgis) $(coverage) $(version) $(cores)
 
 qgis-download:
-	$(RUN) aws s3 cp --recursive s3://xycarto-qgis-tiles/qgis qgis
+	$(RUN) aws s3 cp --quiet --recursive s3://xycarto-qgis-tiles/qgis qgis
 
 terraform:
 	$(RUN_TERRAFORM) bash terraform-configs/build-infra.sh

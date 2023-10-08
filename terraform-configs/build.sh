@@ -4,8 +4,8 @@
 
 source .creds
 
-echo "Cloning Git repo..."
-git clone --branch terraform https://${TOKEN}@github.com/xycarto/qgis-tiles.git
+# echo "Cloning Git repo..."
+# git clone --branch terraform https://${TOKEN}@github.com/xycarto/qgis-tiles.git
 
 cp -r .creds qgis-tiles
 
@@ -16,10 +16,10 @@ make docker-pull
 
 mkdir -p qgis
 
-echo "Downloading data..."
-make qgis-download
+# echo "Downloading data..."
+# make qgis-download
 
 echo "Rendering tiles..."
-make coverage epsg=2193 qgis="qgis/full-nz-mono.qgz" minzoom=0 maxzoom=11 version=v1
+make coverage epsg=2193 qgis="qgis/full-nz-colour.qgz" minzoom=0 maxzoom=11 version=v1
 
 exit
