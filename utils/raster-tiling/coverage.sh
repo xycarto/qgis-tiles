@@ -46,7 +46,7 @@ do
 done
 
 echo "Copying tiles to S3..."
-aws s3 cp --recursive tiles/${base} s3://xyc-tile-service-raster/${base}
+aws s3 cp --recursive tiles/${base} s3://xyc-tile-service-raster/${base} --acl public-read
 
 # # ZIP suff
 # echo "Zippng tiles..."
