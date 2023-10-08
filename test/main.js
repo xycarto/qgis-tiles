@@ -19,7 +19,7 @@ var origin = [ -1000000, 10000000];
 var resolutions = [ 8960, 4480, 2240, 1120, 560, 280, 140, 70, 28 ];
 const matrixIds = [0, 1, 2];
 
-const xyzUrl = "http://localhost:8081/full-nz-mono/v1/full-nz-mono/{z}/{x}/{y}.png"
+const xyzUrl = "http://d22dbabn6r4h6w.cloudfront.net/full-nz-mono/v1/full-nz-mono/{z}/{x}/{y}.png"
 
 const mono = new TileLayer({
   title: 'Monochrome',
