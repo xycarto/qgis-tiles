@@ -23,11 +23,11 @@ scp -o StrictHostKeyChecking=no -i ${key} -r ../../.creds ubuntu@$(terraform out
 echo "Copy scripts..."
 scp -o StrictHostKeyChecking=no -i ${key}  -r ../build.sh ubuntu@$(terraform output -raw instance_public_ip):/home/ubuntu/
 
-echo "Running process command..."
-ssh -o StrictHostKeyChecking=no -i ${key}  ubuntu@$(terraform output -raw instance_public_ip) "bash build.sh"
+# echo "Running process command..."
+# ssh -o StrictHostKeyChecking=no -i ${key}  ubuntu@$(terraform output -raw instance_public_ip) "bash build.sh"
 
-terraform destroy -auto-approve
+# terraform destroy -auto-approve
 
-cd ../
+# cd ../
 
-rm -rf terraform-tiles
+# rm -rf terraform-tiles

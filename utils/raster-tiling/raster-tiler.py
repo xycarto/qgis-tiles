@@ -283,7 +283,7 @@ if __name__ == "__main__":
     ndf = np.array(DF, dtype='object')
     
     print("Rendering tiles...")
-    with Pool(processes=CORES, maxtasksperchild=100) as pool:
+    with Pool(processes=CORES, maxtasksperchild=250) as pool:
         result = pool.starmap_async(render, ndf, chunksize=1).wait()
 
         
