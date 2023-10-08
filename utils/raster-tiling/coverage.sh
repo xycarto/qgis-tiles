@@ -12,6 +12,10 @@ VERSION=$5
 NPROC=$(nproc)
 CORES=$((${NPROC}-10))
 
+base=$(basename ${PROJECT} .qgz)
+
+echo $base
+
 # Set Matrix Syntax
 if [[ ${EPSG} = "2193" ]]; then
     MATRIX="NZTM2000"
@@ -42,7 +46,7 @@ do
 done
 
 echo "Copying tiles to S3..."
-aws s3 cp --recursive tiles s3://xyc-tile-service-raster
+aws s3 cp --recursive tiles/${base} s3://xyc-tile-service-raster/${base}
 
 # # ZIP suff
 # echo "Zippng tiles..."
